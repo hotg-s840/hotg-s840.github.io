@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotG 戰力統計</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定義樣式 */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 讓表格在手機上可以水平滑動 */
+        .table-container {
+            overflow-x: auto;
+        }
+        /* 自定義滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* gray-500 */
+        }
+        /* 搜尋框 focus 樣式 */
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #3b82f6; /* blue-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- 頁面標題 -->
+        <header class="text-center my-6 sm:my-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white">HotG 戰力追蹤</h1>
+            <p class="text-gray-400 mt-2 text-lg">2025/08/09</p>
+        </header>
+
+        <!-- 搜尋功能 -->
+        <div class="mb-6 max-w-lg mx-auto">
+            <input type="text" id="searchInput" placeholder="搜尋玩家名稱..." class="search-input w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 transition duration-300 focus:border-blue-500">
+        </div>
+
+        <!-- 資料表格容器 -->
+        <div class="table-container bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+            <table class="w-full text-left">
+                <thead class="border-b border-gray-700">
+                    <tr>
+                        <th class="p-4 font-semibold text-sm text-gray-300 w-1/6 text-center">名次</th>
+                        <th class="p-4 font-semibold text-sm text-gray-300 w-3/6">名稱</th>
+                        <th class="p-4 font-semibold text-sm text-gray-300 w-2/6 text-right">戰力</th>
+                    </tr>
+                </thead>
+                <tbody id="playerTableBody">
+                    <!-- JavaScript 將會在此處動態生成資料列 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 頁腳 -->
+        <footer class="text-center mt-8">
+            <p class="text-gray-500 text-sm">資料來源: HotG戰力統計20250809.csv</p>
+        </footer>
+    </div>
+
+    <script>
+        // 玩家資料 (從使用者提供的完整 CSV 純文字轉換而來)
+        const playerData = [
+            { rank: 1, name: 'Daisy of Zeon', power: '???' },
+            { rank: 2, name: 'GGhowda', power: '???' },
+            { rank: 3, name: '七彩牛肉絲', power: '???' },
+            { rank: 4, name: '小愛CoBeOH', power: '???' },
+            { rank: 5, name: '伸懶腰', power: '???' },
+            { rank: 6, name: 'kim so hee', power: '???' },
+            { rank: 7, name: '御龍', power: '???' },
+            { rank: 8, name: 'SYAWAL SR', power: '???' },
+            { rank: 9, name: 'ZloveToffee', power: '???' },
+            { rank: 10, name: 'jujĩ999', power: '???' },
+            { rank: 11, name: 'Ironman mk43', power: '???' },
+            { rank: 12, name: '奧比爾', power: '???' },
+            { rank: 13, name: '鹹濕肉丸子', power: '???' },
+            { rank: 14, name: 'Lum No one behind', power: '???' },
+            { rank: 15, name: '帳號被鎖', power: '???' },
+            { rank: 16, name: '广告活', power: '80.6M' },
+            { rank: 17, name: '東頭村拓哉', power: '79.9M' },
+            { rank: 18, name: 'tianling', power: '78.6M' },
+            { rank: 19, name: 'korb jai na', power: '78.6M' },
+            { rank: 20, name: 'Ann0901', power: '78.5M' },
+            { rank: 21, name: 'B іAS', power: '77.9M' },
+            { rank: 22, name: 'ĐÌNH THIÊN', power: '76.0M' },
+            { rank: 23, name: '迷迷貓貓', power: '75.9M' },
+            { rank: 24, name: 'Sugar Glider', power: '75.6M' },
+            { rank: 25, name: 'Boa hancock 08', power: '75.3M' },
+            { rank: 26, name: 'Maeaqw', power: '75.3M' },
+            { rank: 27, name: 'BONNE B2', power: '75.3M' },
+            { rank: 28, name: '鈦強鐵人', power: '75.1M' },
+            { rank: 29, name: 'YEDPED49', power: '74.9M' },
+            { rank: 30, name: '契機', power: '74.8M' },
+            { rank: 31, name: 'marinaprc', power: '74.2M' },
+            { rank: 32, name: 'WEWW', power: '74.1M' },
+            { rank: 33, name: '小金毛宝宝', power: '73.9M' },
+            { rank: 34, name: '王國企鵝', power: '73.9M' },
+            { rank: 35, name: 'Merlinmor', power: '73.8M' },
+            { rank: 36, name: 'Bridgerton B3', power: '73.2M' },
+            { rank: 37, name: '球棒滑入專家', power: '73.2M' },
+            { rank: 38, name: '名前なし猿', power: '72.5M' },
+            { rank: 39, name: 'offpersarunwick', power: '72.4M' },
+            { rank: 40, name: '頭大部隊', power: '72.2M' },
+            { rank: 41, name: 'Homer Forever', power: '72.0M' },
+            { rank: 42, name: '紫星夢海潮', power: '71.8M' },
+            { rank: 43, name: 'Jacky 3558', power: '71.7M' },
+            { rank: 44, name: 'kajunoi', power: '71.4M' },
+            { rank: 45, name: '花花Miranda', power: '71.3M' },
+            { rank: 46, name: '陌生人别爱', power: '70.6M' },
+            { rank: 47, name: '當當當當當', power: '70.1M' },
+            { rank: 48, name: '夢幻魅影', power: '68.9M' },
+            { rank: 49, name: 'popo9522', power: '68.3M' },
+            { rank: 50, name: 'cucuchicken', power: '68.2M' },
+            { rank: 51, name: 'Insurance Planner', power: '68.0M' },
+            { rank: 52, name: '不良人不良帥', power: '67.6M' },
+            { rank: 53, name: 'yu xuan', power: '67.6M' },
+            { rank: 54, name: 'tilley man', power: '67.5M' },
+            { rank: 55, name: 'natcha0822', power: '67.0M' },
+            { rank: 56, name: 'Xianboy95', power: '66.7M' },
+            { rank: 57, name: 'MOGANICX', power: '66.4M' },
+            { rank: 58, name: 'BabyTonpunn', power: '66.3M' },
+            { rank: 59, name: 'BPP8986', power: '66.2M' },
+            { rank: 60, name: 'Tsubasa翼', power: '65.1M' },
+            { rank: 61, name: '奥比爾', power: '64.5M' },
+            { rank: 62, name: 'BIGAJU', power: '64.5M' },
+            { rank: 63, name: 'Daisy41', power: '64.0M' },
+            { rank: 64, name: 'Man3317', power: '64.0M' },
+            { rank: 65, name: 'champ army', power: '64.0M' },
+            { rank: 66, name: 'Klotzyk', power: '62.2M' },
+            { rank: 67, name: '亂玩遊戲吧', power: '61.8M' },
+            { rank: 68, name: 'allan6', power: '61.6M' },
+            { rank: 69, name: '萬兔素利佛', power: '61.4M' },
+            { rank: 70, name: '田園挖寶', power: '61.4M' },
+            { rank: 71, name: '明阿a', power: '60.9M' },
+            { rank: 72, name: '貓手貓腳', power: '60.7M' },
+            { rank: 73, name: 'Benjamin Low', power: '59.0M' },
+            { rank: 74, name: '金吉掰', power: '58.9M' },
+            { rank: 75, name: 'Fongido', power: '58.1M' },
+            { rank: 76, name: '辣媽小粉絲', power: '57.9M' },
+            { rank: 77, name: 'dragonfly575', power: '57.6M' },
+            { rank: 78, name: 'хиІІ', power: '57.0M' },
+            { rank: 79, name: 'LAIKABOY', power: '56.6M' },
+            { rank: 80, name: '啊红姐姐nice', power: '56.6M' },
+            { rank: 81, name: 'Chella72', power: '56.5M' },
+            { rank: 82, name: '망고토스', power: '56.3M' },
+            { rank: 83, name: 'ParkGZoong', power: '56.2M' },
+            { rank: 84, name: 'mecco', power: '55.9M' },
+            { rank: 85, name: '豐豐偉士', power: '55.2M' },
+            { rank: 86, name: 'NeWTON', power: '54.0M' },
+            { rank: 87, name: '安泥亞二士', power: '53.5M' },
+            { rank: 88, name: 'zero anonymity', power: '53.3M' },
+            { rank: 89, name: 'Kadadfloy', power: '53.0M' },
+            { rank: 90, name: 'Pikdee', power: '50.7M' },
+            { rank: 91, name: 'Faber飛寶', power: '50.2M' },
+            { rank: 92, name: 'Wwwcc', power: '49.2M' },
+            { rank: 93, name: 'MrMelo07', power: '48.2M' },
+            { rank: 94, name: 'DatoSri 拿督', power: '48.1M' },
+            { rank: 95, name: 'YC藝術', power: '45.8M' }
+        ];
+
+        const tableBody = document.getElementById('playerTableBody');
+        const searchInput = document.getElementById('searchInput');
+
+        /**
+         * 根據提供的資料渲染表格
+         * @param {Array} data - 要顯示的玩家資料陣列
+         */
+        function renderTable(data) {
+            // 清空現有表格內容
+            tableBody.innerHTML = '';
+
+            // 如果沒有資料，顯示提示訊息
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center p-8 text-gray-500">
+                            找不到符合條件的玩家
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // 遍歷資料並生成表格列
+            data.forEach(player => {
+                const row = document.createElement('tr');
+                // 根據戰力是否為 '???' 給予不同樣式
+                const powerColorClass = player.power === '???' ? 'text-gray-500' : 'text-green-400';
+                
+                row.className = 'border-b border-gray-700 hover:bg-gray-700/50 transition-colors duration-200';
+                row.innerHTML = `
+                    <td class="p-4 text-center text-gray-400">${player.rank}</td>
+                    <td class="p-4 font-medium text-white">${player.name}</td>
+                    <td class="p-4 text-right font-mono ${powerColorClass}">${player.power}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        /**
+         * 過濾並重新渲染表格
+         */
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredData = playerData.filter(player => 
+                player.name.toLowerCase().includes(searchTerm)
+            );
+            renderTable(filteredData);
+        }
+
+        // 監聽搜尋框的輸入事件
+        searchInput.addEventListener('input', filterTable);
+
+        // 初始載入時渲染完整表格
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable(playerData);
+        });
+
+    </script>
+</body>
+</html>
